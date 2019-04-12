@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ class BoardTest {
         Board board = Board.create(1);
         List<GoodAction> startActions = Lists.newArrayList(Iterables.concat(
                 Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE,
-                Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE));
+                Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE_TMP));
 
         assertThat(board.getGoodActions()).isEqualTo(startActions);
 
@@ -39,23 +40,23 @@ class BoardTest {
     @Test
     void nextTurn() {
         Board board = Board.create(1)
-                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0))
-                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(1));
+                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(0))
+                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(1));
 
         Board boardTurn2 = board.nextTurn();
 
         assertThat(boardTurn2.getGoodActions())
-                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE)
+                .containsAll(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE))
                 .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t)).collect(Collectors.toList()));
 
         Board boardTurn3 = boardTurn2
-                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0))
-                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(1))
+                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(0))
+                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(1))
                 .nextTurn();
 
 
         assertThat(boardTurn3.getGoodActions())
-                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE)
+                .containsAll(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE))
                 .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t).add(t)).collect(Collectors.toList()));
 
     }
@@ -70,8 +71,14 @@ class BoardTest {
         Board boardTurn2 = board.nextTurn();
 
         assertThat(boardTurn2.getGoodActions())
-                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE)
+                .containsAll(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE))
                 .contains(replenishableAction);
+    }
+
+    private List<GoodAction> flattenList(List<List<GoodAction>> list) {
+        List<GoodAction> newList = new ArrayList<>();
+        list.forEach(newList::addAll);
+        return newList;
     }
 
 

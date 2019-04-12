@@ -16,11 +16,19 @@ public class Board {
             GoodAction.create(GoodType.WOOD, 3),
             GoodAction.create(GoodType.GRAIN, 1)
     );
-    static final List<GoodAction> GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE = List.of(
+    @Deprecated
+    static final List<GoodAction> GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE_TMP = List.of(
             GoodAction.create(GoodType.FOOD, 1, GoodType.WOOD, 1),
             GoodAction.create(GoodType.FOOD, 1, GoodType.CLAY, 1),
             GoodAction.create(GoodType.FOOD, 1, GoodType.REED, 1),
             GoodAction.create(GoodType.FOOD, 1)
+    );
+
+    static final List<List<GoodAction>> GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE = List.of(
+            List.of(GoodAction.create(GoodType.FOOD, 1, GoodType.WOOD, 1),
+                    GoodAction.create(GoodType.FOOD, 1, GoodType.CLAY, 1),
+                    GoodAction.create(GoodType.FOOD, 1, GoodType.REED, 1)),
+            List.of(GoodAction.create(GoodType.FOOD, 1))
     );
 
     private List<GoodAction> replenishableActions;
@@ -33,7 +41,7 @@ public class Board {
     }
 
     public static Board create(int nrOfPlayers) {
-        return new Board(GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE, GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE);
+        return new Board(GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE, GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE_TMP);
     }
 
     public List<GoodAction> getGoodActions(){
@@ -61,7 +69,7 @@ public class Board {
                 .collect(Collectors.toList());
 
 
-        return new Board(newReplenashables, GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE);
+        return new Board(newReplenashables, GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE_TMP);
     }
 
     private GoodAction toNewGoodAction(GoodAction a) {
