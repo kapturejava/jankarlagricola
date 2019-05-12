@@ -5,9 +5,10 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BoardTest {
@@ -17,7 +18,7 @@ class BoardTest {
         Board board = Board.create(1);
         List<GoodAction> startActions = Lists.newArrayList(Iterables.concat(
                 Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE,
-                Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE_TMP));
+                Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.stream().flatMap(Collection::stream).collect(toList())));
 
         assertThat(board.getGoodActions()).isEqualTo(startActions);
 
@@ -38,26 +39,25 @@ class BoardTest {
     }
 
     @Test
-    void nextTurn() {
+    void nextTurn_ReplenashablesAreAddedEachTurn() {
         Board board = Board.create(1)
-                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(0))
-                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(1));
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0).get(0))
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(1).get(0));
 
         Board boardTurn2 = board.nextTurn();
 
         assertThat(boardTurn2.getGoodActions())
                 .containsAll(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE))
-                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t)).collect(Collectors.toList()));
+                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t)).collect(toList()));
 
         Board boardTurn3 = boardTurn2
-                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(0))
-                .fetchAction(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE).get(1))
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0).get(0))
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(1).get(0))
                 .nextTurn();
-
 
         assertThat(boardTurn3.getGoodActions())
                 .containsAll(flattenList(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE))
-                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t).add(t)).collect(Collectors.toList()));
+                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.stream().map(t -> t.add(t).add(t)).collect(toList()));
 
     }
 
@@ -66,6 +66,7 @@ class BoardTest {
         GoodAction replenishableAction = Board.GOOD_ACTIONS_START_1_PLAYER_REPLENISHABLE.get(0);
 
         Board board = Board.create(1)
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0).get(0))
                 .fetchAction(replenishableAction);
 
         Board boardTurn2 = board.nextTurn();
@@ -75,7 +76,24 @@ class BoardTest {
                 .contains(replenishableAction);
     }
 
-    private List<GoodAction> flattenList(List<List<GoodAction>> list) {
+    @Test
+    void nextTurn_ActionsTogether() {
+        Board board = Board.create(1);
+        Board board1a= board.fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0).get(0));
+
+        assertThat(board1a.getGoodActions())
+                .doesNotContainAnyElementsOf(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0));
+
+        Board board2 = board1a
+                .fetchAction(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(1).get(0))
+                .nextTurn();
+
+        assertThat(board2.getGoodActions())
+                .containsAll(Board.GOOD_ACTIONS_START_1_PLAYER_NOT_REPLENISHABLE.get(0));
+    }
+
+
+        private List<GoodAction> flattenList(List<List<GoodAction>> list) {
         List<GoodAction> newList = new ArrayList<>();
         list.forEach(newList::addAll);
         return newList;
